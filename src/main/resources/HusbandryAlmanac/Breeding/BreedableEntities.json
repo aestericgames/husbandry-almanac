@@ -1,0 +1,148 @@
+{
+  "BreedableEntities": [
+    {
+      "EntityTypeId": "Sheep",
+      "ChildEntityTypeId": "Sheep_Lamb",
+      "ChildModelAsset": "Lamb",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Chicken",
+      "ChildEntityTypeId": "Chicken_Chick",
+      "ChildModelAsset": "Chick",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Boar",
+      "ChildEntityTypeId": "Boar_Piglet",
+      "ChildModelAsset": "Boar_Piglet",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Bison",
+      "ChildEntityTypeId": "Bison_Calf",
+      "ChildModelAsset": "Bison_Calf",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Camel",
+      "ChildEntityTypeId": "Camel_Calf",
+      "ChildModelAsset": "Camel_Calf",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Chicken_Desert",
+      "ChildEntityTypeId": "Chicken_Desert_Chick",
+      "ChildModelAsset": "Chick_Desert",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Goat",
+      "ChildEntityTypeId": "Goat_Kid",
+      "ChildModelAsset": "Goat_Kid",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Horse",
+      "ChildEntityTypeId": "Horse_Foal",
+      "ChildModelAsset": "Horse_Foal",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Mouflon",
+      "ChildEntityTypeId": "Mouflon_Lamb",
+      "ChildModelAsset": "Mouflon_Lamb",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Pig",
+      "ChildEntityTypeId": "Pig_Piglet",
+      "ChildModelAsset": "Piglet",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Pig_Wild",
+      "ChildEntityTypeId": "Pig_Wild_Piglet",
+      "ChildModelAsset": "Piglet_Wild",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Ram",
+      "ChildEntityTypeId": "Ram_Lamb",
+      "ChildModelAsset": "Ram_Lamb",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Skrill",
+      "ChildEntityTypeId": "Skrill_Chick",
+      "ChildModelAsset": "Skrill_Chick",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Turkey",
+      "ChildEntityTypeId": "Turkey_Chick",
+      "ChildModelAsset": "Turkey_Chick",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Warthog",
+      "ChildEntityTypeId": "Warthog_Piglet",
+      "ChildModelAsset": "Warthog_Piglet",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    },
+    {
+      "EntityTypeId": "Cow",
+      "ChildEntityTypeId": "Cow_Calf",
+      "ChildModelAsset": "Calf",
+      "BaseBreedingCooldown": 36000,
+      "BaseBirthingTime": 36000,
+      "BaseDomesticationTime": 36000,
+      "MaxFlockSize": 16
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "GrowableEntities": [
+    {
+      "EntityIndexId": "Sheep_Lamb",
+      "GrowIntoRoleIndexId": "Sheep",
+      "GrowIntoModelAsset": "Sheep",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Chicken_Chick",
+      "GrowIntoRoleIndexId": "Chicken",
+      "GrowIntoModelAsset": "Chicken",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Boar_Piglet",
+      "GrowIntoRoleIndexId": "Boar",
+      "GrowIntoModelAsset": "Boar",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Bison_Calf",
+      "GrowIntoRoleIndexId": "Bison",
+      "GrowIntoModelAsset": "Bison",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Camel_Calf",
+      "GrowIntoRoleIndexId": "Camel",
+      "GrowIntoModelAsset": "Camel",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Chicken_Desert_Chick",
+      "GrowIntoRoleIndexId": "Chicken_Desert",
+      "GrowIntoModelAsset": "Chicken_Desert",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Goat_Kid",
+      "GrowIntoRoleIndexId": "Goat",
+      "GrowIntoModelAsset": "Goat",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Horse_Foal",
+      "GrowIntoRoleIndexId": "Horse",
+      "GrowIntoModelAsset": "Horse",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Mouflon_Lamb",
+      "GrowIntoRoleIndexId": "Mouflon",
+      "GrowIntoModelAsset": "Mouflon",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Pig_Piglet",
+      "GrowIntoRoleIndexId": "Pig",
+      "GrowIntoModelAsset": "Pig",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Pig_Wild_Piglet",
+      "GrowIntoRoleIndexId": "Pig_Wild",
+      "GrowIntoModelAsset": "Pig_Wild",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Ram_Lamb",
+      "GrowIntoRoleIndexId": "Ram",
+      "GrowIntoModelAsset": "Ram",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Skrill_Chick",
+      "GrowIntoRoleIndexId": "Skrill",
+      "GrowIntoModelAsset": "Skrill",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Turkey_Chick",
+      "GrowIntoRoleIndexId": "Turkey",
+      "GrowIntoModelAsset": "Turkey",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Warthog_Piglet",
+      "GrowIntoRoleIndexId": "Warthog",
+      "GrowIntoModelAsset": "Warthog",
+      "DefaultTicksToGrow": 24000
+    },
+    {
+      "EntityIndexId": "Cow_Calf",
+      "GrowIntoRoleIndexId": "Cow",
+      "GrowIntoModelAsset": "Cow",
+      "DefaultTicksToGrow": 24000
+    }
+  ]
+}

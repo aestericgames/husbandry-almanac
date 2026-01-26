@@ -1,0 +1,23 @@
+{
+    "Group": "AestericGames",
+    "Name": "HusbandryAlmanac",
+    "Version": "1.1.2",
+    "Description": "A full experience of animal husbandry for Hytale.",
+    "Authors": [
+        {
+            "Name": "AestericGames",
+            "Email": "aestericgames@gmail.com"
+        }
+    ],
+    "Website": "https://legacy.curseforge.com/hytale/mods/husbandry-almanac",
+    "ServerVersion": "*",
+    "Dependencies": {
+        
+    },
+    "OptionalDependencies": {
+        
+    },
+    "DisabledByDefault": false,
+    "Main": "org.aestericgames.HusbandryAlmanac",
+    "IncludesAssetPack": true
+}
