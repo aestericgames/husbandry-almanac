@@ -3,7 +3,6 @@ package org.aestericgames.growing.systems;
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefSystem;
-import com.hypixel.hytale.server.core.universe.world.events.ChunkPreLoadProcessEvent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.npc.entities.NPCEntity;
 import org.aestericgames.HusbandryAlmanac;
@@ -26,18 +25,12 @@ public class OnGrowingSpawn extends RefSystem<EntityStore> {
             @Nonnull Store<EntityStore> store,
             @Nonnull CommandBuffer<EntityStore> commandBuffer
     ) {
+        GrowingComponent testGrowComp = store.getComponent(ref, HusbandryAlmanac.get().getGrowingComponentType());
 
-//        getLogger().info("OnGrowingSpawn - onEntityAdded called.");
+        if(testGrowComp == null){
+            NPCEntity entityItem = store.getComponent(ref, NPCEntity.getComponentType());
 
-        var entityItem = store.getComponent(ref, NPCEntity.getComponentType());
-
-        if(entityItem != null && isValidGrower(entityItem.getNPCTypeId())){
-//            getLogger().info("OnGrowingSpawn onEntityAdded - Entity type = . " + entityItem.getNPCTypeId());
-
-            var testGrowComp = store.getComponent(ref, HusbandryAlmanac.get().getGrowingComponentType());
-
-            if(testGrowComp == null) {
-//                getLogger().info("OnGrowingSpawn onEntityAdded - Entity does not have GrowComponent");
+            if(entityItem != null && HusbandryAlmanac.get().IsGrowableEntity(entityItem.getNPCTypeId())) {
                 GrowableEntity gEntity = HusbandryAlmanac.get().GetGrowableEntity(entityItem.getNPCTypeId());
 
                 if (gEntity != null) {
@@ -47,9 +40,6 @@ public class OnGrowingSpawn extends RefSystem<EntityStore> {
                     GrowingComponent growComp = new GrowingComponent();
                     commandBuffer.addComponent(ref, HusbandryAlmanac.get().getGrowingComponentType(), growComp);
                 }
-            }
-            else {
-                getLogger().info("OnGrowingSpawn onEntityAdded - Entity does have GrowComponent");
             }
         }
     }
@@ -79,17 +69,17 @@ public class OnGrowingSpawn extends RefSystem<EntityStore> {
         return NPCEntity.getComponentType();
     }
 
-    public void handleOnChunkUnload(ChunkPreLoadProcessEvent event) {
-//        getLogger().info("GrowingSystem - handleOnChunkUnload called!");
-    }
+//    public void handleOnChunkUnload(ChunkPreLoadProcessEvent event) {
+////        getLogger().info("GrowingSystem - handleOnChunkUnload called!");
+//    }
 
-    private boolean isValidGrower(String entityTypeId){
-//        getLogger().info("GrowingSystem - isValidGrower called!");
-//        getLogger().info("GrowingSystem - EntityTypeId is: " + entityTypeId);
-        boolean isValidGrower = HusbandryAlmanac.get().IsGrowableEntity(entityTypeId);
-
-//        getLogger().info("GrowingSystem - IsValidGrower: " + isValidGrower);
-
-        return isValidGrower;
-    }
+//    private boolean isValidGrower(String entityTypeId){
+////        getLogger().info("GrowingSystem - isValidGrower called!");
+////        getLogger().info("GrowingSystem - EntityTypeId is: " + entityTypeId);
+//        boolean isValidGrower = HusbandryAlmanac.get().IsGrowableEntity(entityTypeId);
+//
+////        getLogger().info("GrowingSystem - IsValidGrower: " + isValidGrower);
+//
+//        return isValidGrower;
+//    }
 }

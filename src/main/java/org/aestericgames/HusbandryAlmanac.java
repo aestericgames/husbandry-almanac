@@ -4,7 +4,6 @@ import com.google.gson.*;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.command.system.CommandRegistry;
-import com.hypixel.hytale.server.core.event.events.entity.EntityRemoveEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -47,6 +46,8 @@ public class HusbandryAlmanac extends JavaPlugin {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+//        AddModelsToAssetMap();
 
         LOGGER.atInfo().log("HusbandryAlmanac - GrowableEntities loaded!");
         LOGGER.atInfo().log("HusbandryAlmanac - Number of GrowableEntities: " + GrowableEntities.size());
@@ -176,9 +177,9 @@ public class HusbandryAlmanac extends JavaPlugin {
 
     private void RegisterEvents() {
         // Example of registering to the EntityRemoveEvent event
-        this.getEventRegistry().registerGlobal(EntityRemoveEvent.class, event -> {
-            LOGGER.atInfo().log("HusbandryAlmanac - EntityRemoveEvent called. Event: " + event);
-        });
+//        this.getEventRegistry().registerGlobal(EntityRemoveEvent.class, event -> {
+//            LOGGER.atInfo().log("HusbandryAlmanac - EntityRemoveEvent called. Event: " + event);
+//        });
     }
 
     private void RegisterCommands(){
@@ -197,6 +198,7 @@ public class HusbandryAlmanac extends JavaPlugin {
         cmdReg.registerCommand(new SpawnDesertChickenCommand());
         cmdReg.registerCommand(new SpawnWildPigletCommand());
         cmdReg.registerCommand(new SpawnWildPigCommand());
+        cmdReg.registerCommand(new SpawnBunnyCommand());
     }
 
     private void RegisterGrowingSystem(){
@@ -212,12 +214,15 @@ public class HusbandryAlmanac extends JavaPlugin {
     }
 
     private void RegisterBreedingSystem() {
-        //breedableComponent
-        this.breedableComponent = this.getEntityStoreRegistry()
-                .registerComponent(BreedableComponent.class, BreedableComponent::new);
+        this.breedableComponent = this.getEntityStoreRegistry().registerComponent(BreedableComponent.class, BreedableComponent::new);
 
         this.getEntityStoreRegistry().registerSystem(new BreedingSystem(this.breedableComponent));
-
         this.getEntityStoreRegistry().registerSystem(new OnBreedSpawn());
     }
+
+//    private void AddModelsToAssetMap(){
+////        DefaultAssetMap<String, ModelAsset> defaultModelAssetMap = ModelAsset.getAssetMap();
+////        Map<String, ModelAsset> modelAssetMap = defaultModelAssetMap.getAssetMap();
+////        modelAssetMap.put("Pregnant_Chicken",new ModelAsset());
+//    }
 }

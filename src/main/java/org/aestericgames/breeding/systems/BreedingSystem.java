@@ -7,11 +7,14 @@ import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
+import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
+import com.hypixel.hytale.server.flock.FlockMembership;
 import com.hypixel.hytale.server.npc.NPCPlugin;
+import com.hypixel.hytale.server.npc.corecomponents.movement.BodyMotionWander;
 import com.hypixel.hytale.server.npc.entities.NPCEntity;
 import it.unimi.dsi.fastutil.Pair;
 import org.aestericgames.HusbandryAlmanac;
@@ -44,59 +47,82 @@ public class BreedingSystem extends EntityTickingSystem<EntityStore> {
     ) {
         BreedableComponent breedComponent = archetypeChunk.getComponent(i, breedableComponentType);
         Ref<EntityStore> ref = archetypeChunk.getReferenceTo(i);
-        var entityItem = store.getComponent(ref, NPCEntity.getComponentType());
-        TransformComponent entityTransform = store.getComponent(ref, TransformComponent.getComponentType());
+        NPCEntity entityItem = commandBuffer.getComponent(ref, NPCEntity.getComponentType());
+        TransformComponent entityTransform = commandBuffer.getComponent(ref, TransformComponent.getComponentType());
 
-        if(entityItem != null && breedComponent != null) {
-            // Only proceed if a valid breedable
-            // TODO: Ensure that the type check is dynamic
-            // TODO: Should be part of a "IsBreedable" call
-            if(HusbandryAlmanac.IsBreedableEntity(entityItem.getNPCTypeId())) {
-                BreedableEntity bEntity = HusbandryAlmanac.GetBreedableEntity(entityItem.getNPCTypeId());
+        // Section below is wrapped in a try...catch due to issues with executing a Tick while an entity dies
+        // until I can figure out how to cleanly (and correctly) handle mid-actions when the ref dies, this is to
+        // prevent killed breedables from crashing the server
+        try {
+            if (entityItem != null && breedComponent != null) {
+                if (HusbandryAlmanac.IsBreedableEntity(entityItem.getNPCTypeId())) {
+                    BreedableEntity bEntity = HusbandryAlmanac.GetBreedableEntity(entityItem.getNPCTypeId());
 
-                if(bEntity == null)
-                    throw new RuntimeException("Unexpected Breedable Entity that was not registered.");
+                    if (bEntity == null)
+                        throw new RuntimeException("Unexpected Breedable Entity that was not registered.");
 
-                // Entity is Pregnant, handle pregnant logic
-                if (breedComponent.getIsPregnant()) {
-                    breedComponent.decrementBirthingTime();
+                    if (breedComponent.getIsPregnant()) {
+                        breedComponent.decrementBirthingTime();
 
-                    if (breedComponent.canBirth()) {
-                        LOGGER.atInfo().log("BreedingSystem - Entity has birthed child!");
-                        // Breed new child
-                        World world = entityItem.getWorld();
-                        var position = entityTransform.getPosition();
-                        var newChickPos = new Vector3d(position.x, position.y, position.z);
-                        var rotation = entityTransform.getRotation();
+                        if (breedComponent.canBirth()) {
+                            LOGGER.atInfo().log("BreedingSystem - Entity has birthed child!");
+                            // Breed new child
+                            World world = entityItem.getWorld();
+                            var position = entityTransform.getPosition();
+                            var newChickPos = new Vector3d(position.x, position.y, position.z);
+                            var rotation = entityTransform.getRotation();
 
-                        // TODO: Retrieve what child should be spawned dynamically
-                        NPCPlugin npcPlugin = NPCPlugin.get();
+                            // TODO: Retrieve what child should be spawned dynamically
+                            NPCPlugin npcPlugin = NPCPlugin.get();
 
-                        int roleIndex = npcPlugin.getIndex(bEntity.getChildEntityTypeId());
-                        ModelAsset modelAsset = ModelAsset.getAssetMap().getAsset(bEntity.getChildModelAsset());
-                        Model model = Model.createScaledModel(modelAsset, 1.0f);
+                            int roleIndex = npcPlugin.getIndex(bEntity.getChildEntityTypeId());
+                            ModelAsset modelAsset = ModelAsset.getAssetMap().getAsset(bEntity.getChildModelAsset());
+                            Model model = Model.createScaledModel(modelAsset, 1.0f);
 
-                        world.execute(() -> {
-                            Pair<Ref<EntityStore>, NPCEntity> npcPair = npcPlugin.spawnEntity(
-                                    store,
-                                    roleIndex,
-                                    newChickPos,
-                                    rotation,
-                                    model,
-                                    null
-                            );
+                            world.execute(() -> {
+                                Pair<Ref<EntityStore>, NPCEntity> npcPair = npcPlugin.spawnEntity(
+                                        store,
+                                        roleIndex,
+                                        newChickPos,
+                                        rotation,
+                                        model,
+                                        null
+                                );
 
-                            breedComponent.doBirthChild();
-                        });
+                                breedComponent.doBirthChild();
+                            });
+                        }
                     }
-                } else {
-                    breedComponent.decrementBreedableCooldown();
+                    else if (flockSizeUnderLimit(store, ref)) {
+                        if(breedComponent.getHeadingToPartner()) {
+                            // Get partners position and move towards it
+                            Ref<EntityStore> partnerRef = breedComponent.getPartnerReference();
 
-                    if (breedComponent.canBreed()) {
-                        handleBreeding(entityItem, bEntity, entityTransform, breedComponent);
+                            // Partner may have died
+                            if (partnerRef == null)
+                                return;
+
+                            TransformComponent partnerTransform = commandBuffer.getComponent(partnerRef, TransformComponent.getComponentType());
+                            double distanceFromPartner = this.calculateDistance(partnerTransform.getPosition(), entityTransform.getPosition());
+
+                            if (distanceFromPartner > breedDistance)
+                                return;
+                        }
+
+                        breedComponent.decrementBreedableCooldown();
+
+                        if (breedComponent.canBreed()) {
+                            handleGetPartner(entityItem, entityTransform, breedComponent, commandBuffer);
+                            handleTryBreed(store, ref, breedComponent.getPartnerReference());
+                        }
                     }
                 }
             }
+        }
+        catch (Exception eX){
+            // TODO: Possibly log error
+            // This is a safe catch because entities dying (by player or NPC) can cause parts of this to break, despite checks
+            // Will remove this try...catch if a safer way can be found to ensure components for checks
         }
     }
 
@@ -106,130 +132,190 @@ public class BreedingSystem extends EntityTickingSystem<EntityStore> {
         return Query.and(this.breedableComponentType);
     }
 
-    private void handleBreeding(
+    private void handleGetPartner(
             NPCEntity entityItem,
-            BreedableEntity entity,
             TransformComponent entityTransform,
-            BreedableComponent breedComponent
+            BreedableComponent breedComponent,
+            @Nonnull CommandBuffer<EntityStore> commandBuffer
     ) {
         World world = entityItem.getWorld();
-        Store<EntityStore> entityStore = world.getEntityStore().getStore();
-        List<Ref<EntityStore>> entitiesInRange = TargetUtil.getAllEntitiesInSphere(entityItem.getOldPosition(), flockCheckRange, entityStore);
+
+        // Get Entity Looking for Partner
         String npcTypeId = entityItem.getNPCTypeId();
+        Ref<EntityStore> entityRef = entityItem.getReference();
+
+        Store<EntityStore> entityStore = world.getEntityStore().getStore();
         Ref<EntityStore> potentialPartnerBreedable = null;
-        UUID selfUuid = entityItem.getUuid();
+        UUIDComponent entityUuidComponent = entityStore.getComponent(entityItem.getReference(), UUIDComponent.getComponentType());
+        UUID selfUuid = entityUuidComponent.getUuid();
 
-        if (flockSizeSmallEnough(breedComponent, entityStore, entitiesInRange, npcTypeId)) {
-            ArrayList<Ref<EntityStore>> validEntitiesForBreeding = new ArrayList<>();
+        ArrayList<Ref<EntityStore>> speciesInFlockRange = getSpeciciesInFlockCheckRange(entityTransform, entityStore, npcTypeId, breedComponent);
 
-            for (Ref<EntityStore> entityRef : entitiesInRange) {
-                NPCEntity testEntity = entityStore.getComponent(entityRef, NPCEntity.getComponentType());
+        // Determine who the closest valid entity to breed with is
+        double currentClosestDistance = 999999;
+        for(Ref<EntityStore> partnerRef : speciesInFlockRange) {
+            BreedableComponent potentialPartnerBreedComp = entityStore.getComponent(partnerRef, breedableComponentType);
 
-                // TODO: This will need to be grabbed dynamically
-                if(testEntity == null
-                        || (
-                            !testEntity.getNPCTypeId().equals(entity.getChildEntityTypeId())
-                                    && !testEntity.getNPCTypeId().equals(entity.getEntityTypeId()
-                            )
-                )) {
-                    continue;
-                }
+            // Potential partners need to be a breedable entity of the same species
+            if(potentialPartnerBreedComp == null)
+                continue;
 
-                BreedableComponent partnerBreedable = entityStore.getComponent(entityRef, breedableComponentType);
-                var potentialPartnerTransform = entityStore.getComponent(entityRef, TransformComponent.getComponentType());
+            TransformComponent potentialPartnerTransform = entityStore.getComponent(partnerRef, TransformComponent.getComponentType());
+            NPCEntity partnerNpcEntity = entityStore.getComponent(partnerRef, NPCEntity.getComponentType());
+            UUIDComponent npcUuid = entityStore.getComponent(partnerRef, UUIDComponent.getComponentType());
 
-                double distanceFromBreedable = this.calculateDistance(potentialPartnerTransform.getPosition(), entityTransform.getPosition());
+            // Do not try to match with myself when breeding
+            if(potentialPartnerTransform == null || partnerNpcEntity == null || npcUuid.equals(selfUuid))
+                continue;
 
-                // Check to see if potential entity is within range and able to breed.
-                // Add to list that will be filtered for closest one.
-                if (partnerBreedable != null && distanceFromBreedable <= this.breedDistance) {
-                    // Ensure that potential partner does not have a partner is can breed
-                    if (partnerBreedable.canBreed() && partnerBreedable.getBreedingPartner().isEmpty()) {
-                        validEntitiesForBreeding.add(entityRef);
-                    }
-                }
-            }
+            if(potentialPartnerBreedable == null)
+                potentialPartnerBreedable = partnerRef;
+            else{
+                TransformComponent checkTransform = entityStore.getComponent(potentialPartnerBreedable, TransformComponent.getComponentType());
 
-            // Determine who the closest valid entity to breed with is
-            double currentClosestDistance = 999999;
-            for(Ref<EntityStore> partnerRef : validEntitiesForBreeding) {
-                TransformComponent transform = entityStore.getComponent(partnerRef, TransformComponent.getComponentType());
-                NPCEntity npcEntity = entityStore.getComponent(partnerRef, NPCEntity.getComponentType());
+                double distanceTest = calculateDistance(checkTransform.getPosition(), potentialPartnerTransform.getPosition());
 
-                // Do not try to match with myself when breeding
-                if(transform == null || npcEntity == null || npcEntity.getUuid().equals(selfUuid))
-                    continue;
-
-                if(potentialPartnerBreedable == null)
+                if(distanceTest < currentClosestDistance) {
+                    currentClosestDistance = distanceTest;
                     potentialPartnerBreedable = partnerRef;
-                else{
-                    TransformComponent checkTransform = entityStore.getComponent(potentialPartnerBreedable, TransformComponent.getComponentType());
-
-                    double distanceTest = calculateDistance(checkTransform.getPosition(), transform.getPosition());
-
-                    if(distanceTest < currentClosestDistance) {
-                        currentClosestDistance = distanceTest;
-                        potentialPartnerBreedable = partnerRef;
-                    }
-                }
-            }
-
-            // Found a partner to breed with.
-            if (potentialPartnerBreedable != null) {
-                BreedableComponent partnerBreedableComp = entityStore.getComponent(potentialPartnerBreedable, breedableComponentType);
-                NPCEntity breedPartnerEntity = entityStore.getComponent(potentialPartnerBreedable, NPCEntity.getComponentType());
-                var partnerUuid = breedPartnerEntity.getUuid();
-
-                // Set breeding partners, only set one as pregnant
-                breedComponent.setBreedingPartner(breedPartnerEntity.getUuid().toString());
-                partnerBreedableComp.setBreedingPartner(entityItem.getUuid().toString());
-
-                // If the partner is NOT pregnant, make them pregnant.
-                // If partner is pregnant, mark as having bred
-                if(!partnerBreedableComp.getIsPregnant() && !breedComponent.getIsPregnant()) {
-                    breedComponent.getPregnant();
-                    partnerBreedableComp.doBreeding();
-                }
-                else {
-                    // Partner is pregnant, just need to breed with them
-                    breedComponent.doBreeding();
                 }
             }
         }
+
+        // Found the closest partner.
+        // Now assign each other as partners
+        if (potentialPartnerBreedable != null) {
+            BreedableComponent partnerBreedableComp = entityStore.getComponent(potentialPartnerBreedable, breedableComponentType);
+
+            // Set breeding partners, only set one as pregnant
+            breedComponent.setPartnerReference(potentialPartnerBreedable);
+            partnerBreedableComp.setPartnerReference(entityRef);
+        }
     }
 
-    private boolean flockSizeSmallEnough(
-            BreedableComponent breedComponent,
-            Store<EntityStore> entityStore,
-            List<Ref<EntityStore>> entitiesInRange,
-            String npcTypeId
-    ){
-        int currentSizeInFlock = 0;
+    private boolean flockSizeUnderLimit
+    (
+            Store<EntityStore> eStore,
+            Ref<EntityStore> checkingEntity
+    )
+    {
+        TransformComponent entityTf = eStore.getComponent(checkingEntity, TransformComponent.getComponentType());
 
-        // If there was more than just the single entity, check to see if they match the same type or not
-        if (entitiesInRange.size() >= 1) {
+        if(entityTf == null)
+            return false;
+
+        NPCEntity checkingNpcEntity = eStore.getComponent(checkingEntity, NPCEntity.getComponentType());
+        BreedableComponent breedComponent = eStore.getComponent(checkingEntity, breedableComponentType);
+
+        int currentFlockSize = 0;
+        ArrayList<Ref<EntityStore>> speciesInRange = getSpeciciesInFlockCheckRange(entityTf, eStore, checkingNpcEntity.getNPCTypeId(),breedComponent);
+
+        if (!speciesInRange.isEmpty()) {
             // Check for any entities that match the breedable or it's children, for flock size checking
-            for (Ref<EntityStore> entityRef : entitiesInRange) {
-                NPCEntity npcEntity = entityStore.getComponent(entityRef, NPCEntity.getComponentType());
+            for (Ref<EntityStore> entityRef : speciesInRange) {
+                NPCEntity npcEntity = eStore.getComponent(entityRef, NPCEntity.getComponentType());
+                BreedableComponent eRefBreedComponent = eStore.getComponent(entityRef, breedableComponentType);
+                String npcTypeId = checkingNpcEntity.getNPCTypeId();
 
                 if (npcEntity != null) {
                     String checkingNpcTypeId = npcEntity.getNPCTypeId();
 
                     // If entity type matches the breedable's child or current type, add as flock size
-                    // TODO: Determine how to dynamically check for the Parent and the Child
-                    if (checkingNpcTypeId.equals(npcTypeId) || checkingNpcTypeId.equals(breedComponent.getChildTypeId())) {
-                        currentSizeInFlock++;
+                    if (
+                            checkingNpcTypeId.equals(npcTypeId)
+                                    || checkingNpcTypeId.equals(breedComponent.getChildTypeId())
+                    ) {
+                        currentFlockSize++;
+
+                        // Count any unborn child entities as part of the flock
+                        if (
+                                checkingNpcTypeId.equals(npcTypeId)
+                                && eRefBreedComponent.getIsPregnant()
+                        ) {
+                            currentFlockSize++;
+                        }
                     }
                 }
             }
         }
 
+//        LOGGER.atInfo().log("BreedingSystem - FlockSizeUnderLimit Function - Flock Size: " + currentFlockSize);
+
         // Flock size is too big currently, allowing breeding
-        if (currentSizeInFlock >= breedComponent.getMaxFlockSize()) {
+        if (currentFlockSize >= breedComponent.getMaxFlockSize()) {
             return false;
         }
 
         return true;
+    }
+
+    private void handleTryBreed(
+            Store<EntityStore> entityStore,
+            Ref<EntityStore> mainEntityRef,
+            Ref<EntityStore> partnerEntityRef
+    ) {
+        BreedableComponent breedComponent = entityStore.getComponent(mainEntityRef, breedableComponentType);
+        TransformComponent entityTransform = entityStore.getComponent(mainEntityRef, TransformComponent.getComponentType());
+
+        if(breedComponent == null || entityTransform == null)
+            return;
+
+        // Determine if partner is in range. If not, start heading towards each other
+        TransformComponent potentialPartnerTransform = entityStore.getComponent(partnerEntityRef, TransformComponent.getComponentType());
+        double distanceFromBreedable = this.calculateDistance(potentialPartnerTransform.getPosition(), entityTransform.getPosition());
+
+        // If we are not in range for breeding, set heading towards each other.
+        // If we are in range, perform breeding.
+        if (distanceFromBreedable >= this.breedDistance) {
+            BreedableComponent partnerBreedableComp = entityStore.getComponent(partnerEntityRef, breedableComponentType);
+
+            breedComponent.setHeadingToPartner(true);
+            partnerBreedableComp.setHeadingToPartner(true);
+        } else {
+            BreedableComponent partnerBreedableComp = entityStore.getComponent(partnerEntityRef, breedableComponentType);
+
+            // If the partner is NOT pregnant, make them pregnant.
+            // If partner is pregnant, mark as having bred
+            if(!partnerBreedableComp.getIsPregnant() && !breedComponent.getIsPregnant()) {
+                breedComponent.getPregnant();
+                partnerBreedableComp.doBreeding();
+            }
+            else if(partnerBreedableComp.getIsPregnant()) {
+                // Partner is pregnant, just need to breed with them
+                breedComponent.doBreeding();
+            }
+
+            NPCEntity bunnyEntityTest = entityStore.getComponent(partnerEntityRef, NPCEntity.getComponentType());
+            if(bunnyEntityTest != null && bunnyEntityTest.getNPCTypeId().equals("Rabbit")) {
+                LOGGER.atInfo().log("BreedingSystem - Handle Breeding - A rabbit has gotten pregnant!.");
+            }
+        }
+    }
+
+    private ArrayList<Ref<EntityStore>> getSpeciciesInFlockCheckRange(
+            TransformComponent checkingEntityTransform,
+            Store<EntityStore> eStore,
+            String npcTypeId,
+            BreedableComponent breedComponent
+    ){
+        List<Ref<EntityStore>> entitiesInRange = TargetUtil.getAllEntitiesInSphere(checkingEntityTransform.getPosition(), flockCheckRange, eStore);
+        ArrayList<Ref<EntityStore>> result = new ArrayList<Ref<EntityStore>>();
+
+        for (Ref<EntityStore> entityRef : entitiesInRange) {
+            NPCEntity npcEntity = eStore.getComponent(entityRef, NPCEntity.getComponentType());
+
+            if(npcEntity == null)
+                continue;
+
+            String checkingNpcTypeId = npcEntity.getNPCTypeId();
+
+            if (checkingNpcTypeId.equals(npcTypeId) || checkingNpcTypeId.equals(breedComponent.getChildTypeId())
+            ) {
+                result.add(entityRef);
+            }
+        }
+
+        return result;
     }
 
     private double calculateDistance(Vector3d pos1, Vector3d pos2) {
