@@ -19,9 +19,9 @@ import it.unimi.dsi.fastutil.Pair;
 
 import javax.annotation.Nonnull;
 
-public class SpawnChickCommand extends AbstractPlayerCommand {
-    public SpawnChickCommand(){
-        super("spawn-chick","This spawns a chick at the players location.");
+public class SpawnBunnyCommand extends AbstractPlayerCommand {
+    public SpawnBunnyCommand(){
+        super("spawn-bunny","This spawns a bunny at the players location.");
     }
 
     @Override
@@ -32,15 +32,19 @@ public class SpawnChickCommand extends AbstractPlayerCommand {
             @Nonnull PlayerRef playerRef,
             @Nonnull World world
     ) {
-        Player player = store.getComponent(ref, Player.getComponentType());
-//        var position = player.getTransformComponent().getPosition();
-        var playerPos = player.getTransformComponent().getPosition();
+//        Player player = store.getComponent(ref, Player.getComponentType());
+        TransformComponent pTransform = store.getComponent(ref, TransformComponent.getComponentType());
+
+        if(pTransform == null)
+            return;
+
+        var playerPos = pTransform.getPosition();
         var position = new Vector3d(playerPos.x, playerPos.y, playerPos.z);
 
         world.execute(() -> {
             NPCPlugin npcPlugin = NPCPlugin.get();
-            int roleIndex = npcPlugin.getIndex("Chicken_Chick");
-            ModelAsset modelAsset = ModelAsset.getAssetMap().getAsset("Chick");
+            int roleIndex = npcPlugin.getIndex("Bunny");
+            ModelAsset modelAsset = ModelAsset.getAssetMap().getAsset("Bunny");
             Model model = Model.createScaledModel(modelAsset, 1.0f);
 
             Pair<Ref<EntityStore>, NPCEntity> npcPair = npcPlugin.spawnEntity(
