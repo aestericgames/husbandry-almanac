@@ -163,6 +163,7 @@ public class HusbandryAlmanac extends JavaPlugin {
         int baseBirthingTime = jObj.get("BaseBirthingTime").getAsInt();
         int baseDomesticationTime = jObj.get("BaseDomesticationTime").getAsInt();
         int maxFlockSize = jObj.get("MaxFlockSize").getAsInt();
+        String pregnantModelName = jObj.get("PregnantModelName").getAsString();
 
         return new BreedableEntity(
                 entityTypeId,
@@ -171,7 +172,8 @@ public class HusbandryAlmanac extends JavaPlugin {
                 baseBreedingCooldown,
                 baseBirthingTime,
                 baseDomesticationTime,
-                maxFlockSize
+                maxFlockSize,
+                pregnantModelName
         );
     }
 
@@ -199,6 +201,8 @@ public class HusbandryAlmanac extends JavaPlugin {
         cmdReg.registerCommand(new SpawnWildPigletCommand());
         cmdReg.registerCommand(new SpawnWildPigCommand());
         cmdReg.registerCommand(new SpawnBunnyCommand());
+        cmdReg.registerCommand(new SpawnPregnantChickenCommand());
+        cmdReg.registerCommand(new SpawnPregnantCowCommand());
     }
 
     private void RegisterGrowingSystem(){

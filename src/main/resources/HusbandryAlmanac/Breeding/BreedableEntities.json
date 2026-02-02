@@ -7,7 +7,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Chicken",
@@ -16,7 +17,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": "Pregnant_Chicken"
     },
     {
       "EntityTypeId": "Boar",
@@ -25,7 +27,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Bison",
@@ -34,7 +37,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Camel",
@@ -43,7 +47,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Chicken_Desert",
@@ -52,7 +57,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Goat",
@@ -61,7 +67,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Horse",
@@ -70,7 +77,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Mouflon",
@@ -79,7 +87,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Pig",
@@ -88,7 +97,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Pig_Wild",
@@ -97,7 +107,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Ram",
@@ -106,7 +117,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Skrill",
@@ -115,7 +127,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Turkey",
@@ -124,7 +137,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Warthog",
@@ -133,7 +147,8 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     },
     {
       "EntityTypeId": "Cow",
@@ -142,16 +157,18 @@
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": "Pregnant_Cow"
     },
-	{
+    {
       "EntityTypeId": "Rabbit",
       "ChildEntityTypeId": "Bunny",
       "ChildModelAsset": "Bunny",
       "BaseBreedingCooldown": 54000,
       "BaseBirthingTime": 54000,
       "BaseDomesticationTime": 72000,
-      "MaxFlockSize": 10
+      "MaxFlockSize": 10,
+      "PregnantModelName": ""
     }
   ]
 }

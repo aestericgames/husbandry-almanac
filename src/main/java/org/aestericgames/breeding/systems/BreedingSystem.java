@@ -8,13 +8,12 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
+import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
-import com.hypixel.hytale.server.flock.FlockMembership;
 import com.hypixel.hytale.server.npc.NPCPlugin;
-import com.hypixel.hytale.server.npc.corecomponents.movement.BodyMotionWander;
 import com.hypixel.hytale.server.npc.entities.NPCEntity;
 import it.unimi.dsi.fastutil.Pair;
 import org.aestericgames.HusbandryAlmanac;
@@ -47,6 +46,7 @@ public class BreedingSystem extends EntityTickingSystem<EntityStore> {
     ) {
         BreedableComponent breedComponent = archetypeChunk.getComponent(i, breedableComponentType);
         Ref<EntityStore> ref = archetypeChunk.getReferenceTo(i);
+
         NPCEntity entityItem = commandBuffer.getComponent(ref, NPCEntity.getComponentType());
         TransformComponent entityTransform = commandBuffer.getComponent(ref, TransformComponent.getComponentType());
 
@@ -65,7 +65,6 @@ public class BreedingSystem extends EntityTickingSystem<EntityStore> {
                         breedComponent.decrementBirthingTime();
 
                         if (breedComponent.canBirth()) {
-                            LOGGER.atInfo().log("BreedingSystem - Entity has birthed child!");
                             // Breed new child
                             World world = entityItem.getWorld();
                             var position = entityTransform.getPosition();
@@ -75,22 +74,44 @@ public class BreedingSystem extends EntityTickingSystem<EntityStore> {
                             // TODO: Retrieve what child should be spawned dynamically
                             NPCPlugin npcPlugin = NPCPlugin.get();
 
-                            int roleIndex = npcPlugin.getIndex(bEntity.getChildEntityTypeId());
-                            ModelAsset modelAsset = ModelAsset.getAssetMap().getAsset(bEntity.getChildModelAsset());
-                            Model model = Model.createScaledModel(modelAsset, 1.0f);
+                            try {
+                                world.execute(() -> {
+                                    int childRoleIndex = npcPlugin.getIndex(bEntity.getChildEntityTypeId());
+                                    ModelAsset childModelAsset = ModelAsset.getAssetMap().getAsset(bEntity.getChildModelAsset());
+                                    Model childModel = Model.createScaledModel(childModelAsset, 1.0f);
 
-                            world.execute(() -> {
-                                Pair<Ref<EntityStore>, NPCEntity> npcPair = npcPlugin.spawnEntity(
-                                        store,
-                                        roleIndex,
-                                        newChickPos,
-                                        rotation,
-                                        model,
-                                        null
-                                );
+                                    Pair<Ref<EntityStore>, NPCEntity> npcPair = npcPlugin.spawnEntity(
+                                            store,
+                                            childRoleIndex,
+                                            newChickPos,
+                                            rotation,
+                                            childModel,
+                                            null
+                                    );
 
-                                breedComponent.doBirthChild();
-                            });
+                                    breedComponent.doBirthChild();
+
+                                    // If a pregnant model exists, revert back to original form
+                                    if (!breedComponent.getPregnantModelName().equals("")) {
+                                        ModelComponent entityModelComp = store.getComponent(ref, ModelComponent.getComponentType());
+
+                                        if (entityModelComp != null) {
+                                            world.execute(() -> {
+                                                int roleIndex = npcPlugin.getIndex(entityItem.getNPCTypeId());
+                                                ModelAsset modelAsset = ModelAsset.getAssetMap().getAsset(entityItem.getNPCTypeId());
+                                                Model model = Model.createScaledModel(modelAsset, 1.0f);
+
+                                                commandBuffer.putComponent(ref, ModelComponent.getComponentType(), new ModelComponent(model));
+                                                entityItem.setRoleIndex(roleIndex);
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+                            catch(Exception eX) {
+                                LOGGER.atInfo().log("Unexpected error during after the birthing. Error: " + eX.getMessage());
+                                LOGGER.atInfo().log("Unexpected error during after the birthing. Error: " + eX.getLocalizedMessage());
+                            }
                         }
                     }
                     else if (flockSizeUnderLimit(store, ref)) {
@@ -239,8 +260,6 @@ public class BreedingSystem extends EntityTickingSystem<EntityStore> {
             }
         }
 
-//        LOGGER.atInfo().log("BreedingSystem - FlockSizeUnderLimit Function - Flock Size: " + currentFlockSize);
-
         // Flock size is too big currently, allowing breeding
         if (currentFlockSize >= breedComponent.getMaxFlockSize()) {
             return false;
@@ -256,8 +275,9 @@ public class BreedingSystem extends EntityTickingSystem<EntityStore> {
     ) {
         BreedableComponent breedComponent = entityStore.getComponent(mainEntityRef, breedableComponentType);
         TransformComponent entityTransform = entityStore.getComponent(mainEntityRef, TransformComponent.getComponentType());
+        NPCEntity mainEntity = entityStore.getComponent(mainEntityRef, NPCEntity.getComponentType());
 
-        if(breedComponent == null || entityTransform == null)
+        if(breedComponent == null || entityTransform == null || mainEntity == null)
             return;
 
         // Determine if partner is in range. If not, start heading towards each other
@@ -274,20 +294,42 @@ public class BreedingSystem extends EntityTickingSystem<EntityStore> {
         } else {
             BreedableComponent partnerBreedableComp = entityStore.getComponent(partnerEntityRef, breedableComponentType);
 
-            // If the partner is NOT pregnant, make them pregnant.
-            // If partner is pregnant, mark as having bred
+            // If both are not pregnant, then I become pregnant
+            // If partner is pregnant, mark myself as having bred
             if(!partnerBreedableComp.getIsPregnant() && !breedComponent.getIsPregnant()) {
+                NPCEntity partnerEntity = entityStore.getComponent(partnerEntityRef, NPCEntity.getComponentType());
+
                 breedComponent.getPregnant();
                 partnerBreedableComp.doBreeding();
+
+                if(partnerEntity.getNPCTypeId().equals(mainEntity.getNPCTypeId()) && mainEntity.getNPCTypeId().equals(partnerEntity.getNPCTypeId())) {
+                    try {
+                        ModelComponent mainEntityModelComp = entityStore.getComponent(mainEntityRef, ModelComponent.getComponentType());
+
+                        if (mainEntityModelComp != null && breedComponent.getIsPregnant()) {
+                            World world = partnerEntity.getWorld();
+
+                            if(!breedComponent.getPregnantModelName().equals("")) {
+                                world.execute(() -> {
+                                    NPCPlugin npcPlugin = NPCPlugin.get();
+                                    int roleIndex = npcPlugin.getIndex(breedComponent.getPregnantModelName());
+                                    ModelAsset modelAsset = ModelAsset.getAssetMap().getAsset(breedComponent.getPregnantModelName());
+                                    Model model = Model.createScaledModel(modelAsset, 1.0f);
+
+                                    entityStore.putComponent(mainEntityRef, ModelComponent.getComponentType(), new ModelComponent(model));
+                                    mainEntity.setRoleIndex(roleIndex);
+                                });
+                            }
+                        }
+                    }
+                    catch(Exception eX) {
+                        LOGGER.atInfo().log("Error attempting to change model. Error: " + eX.getMessage());
+                    }
+                }
             }
             else if(partnerBreedableComp.getIsPregnant()) {
                 // Partner is pregnant, just need to breed with them
                 breedComponent.doBreeding();
-            }
-
-            NPCEntity bunnyEntityTest = entityStore.getComponent(partnerEntityRef, NPCEntity.getComponentType());
-            if(bunnyEntityTest != null && bunnyEntityTest.getNPCTypeId().equals("Rabbit")) {
-                LOGGER.atInfo().log("BreedingSystem - Handle Breeding - A rabbit has gotten pregnant!.");
             }
         }
     }
