@@ -65,6 +65,10 @@ public class BreedableComponent implements Component<EntityStore> {
                     (config, headingToPartner, info) -> config.headingToPartner = headingToPartner, // SETTER
                     (config, info) -> config.headingToPartner)
             .add()
+            .append(new KeyedCodec<>("PregnantModelName", Codec.STRING),
+                    (config, pregnantModelName, info) -> config.pregnantModelName = pregnantModelName, // SETTER
+                    (config, info) -> config.pregnantModelName)
+            .add()
             .build();
 
     public static final HytaleLogger LOGGER = HytaleLogger.get("HusbandryAlmanac");
@@ -83,6 +87,7 @@ public class BreedableComponent implements Component<EntityStore> {
     private boolean beingConsideredForPartner;
     private Ref<EntityStore> partnerRef;
     private boolean headingToPartner;
+    private String pregnantModelName;
 
     public BreedableComponent(){
         baseBreedingTicksCooldown = 36000;
@@ -98,6 +103,7 @@ public class BreedableComponent implements Component<EntityStore> {
         partnerUuid = "";
         headingToPartner = false;
         this.partnerRef = null;
+        this.pregnantModelName = "";
     }
 
     public BreedableComponent(BreedableEntity bEntity){
@@ -111,6 +117,7 @@ public class BreedableComponent implements Component<EntityStore> {
         isBeingDomesticated = false;
         partnerUuid = "";
         partnerRef = null;
+        pregnantModelName = bEntity.getPregnantModelName();
 
         // Set the base values so we don't breed immediatelly
         breedingCooldownTicksRemaining = bEntity.getBaseBreedingCooldown();
@@ -131,6 +138,7 @@ public class BreedableComponent implements Component<EntityStore> {
         partnerUuid = comp.partnerUuid;
         beingConsideredForPartner = comp.beingConsideredForPartner;
         partnerRef = comp.partnerRef;
+        pregnantModelName = comp.pregnantModelName;
     }
 
     @Nullable
@@ -145,6 +153,14 @@ public class BreedableComponent implements Component<EntityStore> {
 
     public String getChildTypeId(){
         return this.childTypeId;
+    }
+
+    public void setPregnantModelName(String pregnantmodelName) {
+        this.pregnantModelName = pregnantmodelName;
+    }
+
+    public String getPregnantModelName() {
+        return this.pregnantModelName;
     }
 
     public Ref<EntityStore> getPartnerReference(){

@@ -35,6 +35,10 @@ public class BreedableEntity {
                             (config, maxFlockSize, info) -> config.maxFlockSize = maxFlockSize, // Setter
                             (config, info) -> config.maxFlockSize) // Getter
                     .add()
+                    .append(new KeyedCodec<>("PregnantModelName",Codec.STRING),
+                            (config, pregnantModelName, info) -> config.pregnantModelName = pregnantModelName, // Setter
+                            (config, info) -> config.pregnantModelName) // Getter
+                    .add()
                     .build();
 
     private String entityTypeId;
@@ -44,6 +48,7 @@ public class BreedableEntity {
     private int baseBirthingTime;
     private int baseDomesitcationTime;
     private int maxFlockSize;
+    private String pregnantModelName;
 
     public BreedableEntity(){
 
@@ -77,6 +82,10 @@ public class BreedableEntity {
         return this.maxFlockSize;
     }
 
+    public String getPregnantModelName() {
+        return this.pregnantModelName;
+    }
+
     public BreedableEntity(
             String entityTypeId,
             String childEntityTypeId,
@@ -84,7 +93,8 @@ public class BreedableEntity {
             int baseBreedingCooldown,
             int baseBirthingTime,
             int baseDomesticationTime,
-            int maxFlockSize
+            int maxFlockSize,
+            String pregnantModelName
     ) {
         this.entityTypeId = entityTypeId;
         this.childEntityTypeId = childEntityTypeId;
@@ -93,5 +103,6 @@ public class BreedableEntity {
         this.baseBirthingTime = baseBirthingTime;
         this.baseDomesitcationTime = baseDomesticationTime;
         this.maxFlockSize = maxFlockSize;
+        this.pregnantModelName = pregnantModelName;
     }
 }
